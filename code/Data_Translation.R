@@ -168,7 +168,7 @@ newdf2 <- newdf2 %>%
   full_join(expenditures) %>% 
   mutate(profit = total_income - total_exp)
 
-model1 <- lm(formula = profit ~ total_land + total_eq_val + hh_mem_count + I(debt_to_savings_ratio * 100) + total_exp, data = newdf2)
+model1 <- lm(formula = total_income ~ total_land + total_eq_val + hh_mem_count + I(debt_to_savings_ratio * 100) + total_exp, data = newdf2)
 summary(model1)
 
 # Change the ever been vaccinated field to a zero if it's a 2. Group and get a rate of vaccination (general) for each cluster. 
@@ -178,3 +178,16 @@ health <- read_dta("sec3b.dta")
 # Group to get pre-natal care spending per cluster. 
 
 preg <- read_dta("sec3d.dta")
+
+preg <- preg %>% 
+  select(clust,s3dq5,s3dq19) %>% 
+  mutate(s3dq19 = ifelse(is.na(s3dq19),0,s3dq19)) %>% 
+  group_by(clust) %>% 
+  summarise(pn = sum(s3dq19))
+ 
+newdf2 <- newdf2 %>% 
+  full_join(preg) %>% 
+  mutate(total_eq_val = ifelse(is.na(total_eq_val),0, total_eq_val))
+
+model2 <- lm(formula = profit ~ total_land + total_eq_val + total_savings + debt + total_exp + avg_educ, data = newdf2)
+summary(model1)
