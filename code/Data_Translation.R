@@ -148,8 +148,7 @@ newdf2 <- newdf2 %>%
   full_join(savings) %>% 
   mutate(debt_to_savings_ratio = debt/total_savings)
 
-model1 <- lm(formula = total_income ~ total_land + total_eq_val + hh_mem_count + total_training + debt_to_savings_ratio, data = newdf2)
-summary(model1)
+
 
 # Variables to add:
 
@@ -158,11 +157,24 @@ summary(model1)
 water <- read_dta("sec7.dta")
 
 
+expenditures <- read_dta("exp4.dta")
 
+expenditures <- expenditures %>% 
+  select(clust,cropexp) %>% 
+  group_by(clust) %>% 
+  summarise(total_exp = sum(cropexp))
 
+newdf2 <- newdf2 %>% 
+  full_join(expenditures) %>% 
+  mutate(profit = total_income - total_exp)
 
+model1 <- lm(formula = profit ~ total_land + total_eq_val + hh_mem_count + I(debt_to_savings_ratio * 100) + total_exp, data = newdf2)
+summary(model1)
 
+# Change the ever been vaccinated field to a zero if it's a 2. Group and get a rate of vaccination (general) for each cluster. 
 
+health <- read_dta("sec3b.dta")
 
+# Group to get pre-natal care spending per cluster. 
 
-
+preg <- read_dta("sec3d.dta")
